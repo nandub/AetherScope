@@ -27,15 +27,44 @@ through the -TypeDefinition parameter set.
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [Parameter()]
-    [string]$SourcePath = (Join-Path -Path $PSScriptRoot -ChildPath '..\Source\AetherScopePrecisionHelper.cs'),
+    [string]$SourcePath,
 
     [Parameter()]
-    [string]$OutputPath = (Join-Path -Path $PSScriptRoot -ChildPath '..\Source\AetherScopePrecisionHelper.dll')
+    [string]$OutputPath
 )
 
 try {
-    $resolvedSourcePath = [System.IO.Path]::GetFullPath((Join-Path -Path $PSScriptRoot -ChildPath $SourcePath))
-    $resolvedOutputPath = [System.IO.Path]::GetFullPath((Join-Path -Path $PSScriptRoot -ChildPath $OutputPath))
+    $scriptRoot = $PSScriptRoot
+    if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
+        $scriptRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+    }
+
+    if ([string]::IsNullOrWhiteSpace($SourcePath)) {
+        $SourcePath = '..\Source\AetherScopePrecisionHelper.cs'
+    }
+
+    if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+        $OutputPath = '..\Source\AetherScopePrecisionHelper.dll'
+    }
+
+    function Resolve-AetherScopeBuildPath {
+        param(
+            [Parameter(Mandatory = $true)]
+            [string]$Path,
+
+            [Parameter(Mandatory = $true)]
+            [string]$BasePath
+        )
+
+        if ([System.IO.Path]::IsPathRooted($Path)) {
+            return [System.IO.Path]::GetFullPath($Path)
+        }
+
+        return [System.IO.Path]::GetFullPath((Join-Path -Path $BasePath -ChildPath $Path))
+    }
+
+    $resolvedSourcePath = Resolve-AetherScopeBuildPath -Path $SourcePath -BasePath $scriptRoot
+    $resolvedOutputPath = Resolve-AetherScopeBuildPath -Path $OutputPath -BasePath $scriptRoot
 
     if (-not (Test-Path -LiteralPath $resolvedSourcePath)) {
         Write-Error ('Source file not found: {0}' -f $resolvedSourcePath)
@@ -43,13 +72,27 @@ try {
     }
 
     if ($PSCmdlet.ShouldProcess($resolvedOutputPath, 'Compile AetherScope precision helper DLL')) {
-        if (Test-Path -LiteralPath $resolvedOutputPath) {
-            Remove-Item -LiteralPath $resolvedOutputPath -Force -ErrorAction Stop
-        }
-
         $typeDefinition = Get-Content -LiteralPath $resolvedSourcePath -Raw -ErrorAction Stop
-        Add-Type -TypeDefinition $typeDefinition -Language CSharp -OutputAssembly $resolvedOutputPath -ErrorAction Stop | Out-Null
-        Get-Item -LiteralPath $resolvedOutputPath
+        $temporaryOutputPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('AetherScopePrecisionHelper-{0}.dll' -f ([guid]::NewGuid().ToString()))
+
+        try {
+            Add-Type -TypeDefinition $typeDefinition -Language CSharp -OutputAssembly $temporaryOutputPath -ErrorAction Stop | Out-Null
+
+            if (Test-Path -LiteralPath $resolvedOutputPath) {
+                Remove-Item -LiteralPath $resolvedOutputPath -Force -ErrorAction Stop
+            }
+
+            Move-Item -LiteralPath $temporaryOutputPath -Destination $resolvedOutputPath -Force -ErrorAction Stop
+            Get-Item -LiteralPath $resolvedOutputPath
+        }
+        catch [System.UnauthorizedAccessException] {
+            Write-Error ('Failed to replace precision helper DLL at {0}. The file is likely in use by another PowerShell session or process. Close sessions that imported AetherScope and try again. Original error: {1}' -f $resolvedOutputPath, $_.Exception.Message)
+        }
+        finally {
+            if (Test-Path -LiteralPath $temporaryOutputPath) {
+                Remove-Item -LiteralPath $temporaryOutputPath -Force -ErrorAction SilentlyContinue
+            }
+        }
     }
 }
 catch {

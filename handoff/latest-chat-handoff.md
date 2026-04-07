@@ -34,11 +34,11 @@ Also create a zip containing these files.
 - `dist/` is the release output folder
 
 ## What was actually present in this workspace
-The expected source files were not visible in the Codex workspace snapshot during this task. Because of that, this package is a **documentation and handoff baseline**, not a verification of the current functional code.
+The expected source files are now present in this workspace, including `Source/AetherScope.ps1`, `Source/AetherScope.psm1`, `Source/AetherScope.psd1`, `Source/AetherScopePrecisionHelper.cs`, `scripts/Build-AetherScope.ps1`, `scripts/Build-AetherScopePrecisionHelper.ps1`, and `Tests/AetherScope.Smoke.Tests.ps1`.
 
 ## Recommended next steps
-1. Verify the actual repository content.
-2. Restore or locate `Source/AetherScope.ps1` and related files if missing.
-3. Run the script under Windows PowerShell 5.1.
-4. Repair parse/runtime defects before attempting deeper refactors.
-5. Keep the build and packaging path deterministic.
+1. Perform focused runtime validation of the public tracking, visibility, GPS/NMEA, and rotator commands.
+2. Decide whether to fix the local `PSModulePath` / OneDrive-backed module-loading issue so `Pester` imports cleanly without environment overrides.
+3. Keep `Set-AetherScopeRotatorPark` as the public parking command and maintain approved-verb naming across new additions.
+4. Keep the build and packaging path deterministic.
+5. Close sessions that imported AetherScope before rebuilding `Source/AetherScopePrecisionHelper.dll`.

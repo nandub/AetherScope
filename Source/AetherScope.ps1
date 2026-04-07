@@ -3526,7 +3526,7 @@ https://www.radiomanual.info/schemi/ACC_rotator/Yaesu_GS-232A_user.pdf
 
 
 
-function Park-AetherScopeRotator {
+function Set-AetherScopeRotatorPark {
 <#
 .SYNOPSIS
 Parks a supported rotator backend.
@@ -3551,9 +3551,9 @@ Serial baud rate for Gs232Serial.
 .PARAMETER TimeoutMilliseconds
 I/O timeout in milliseconds.
 .EXAMPLE
-Park-AetherScopeRotator -Backend HamlibTcp -HostName 127.0.0.1 -Port 4533
+Set-AetherScopeRotatorPark -Backend HamlibTcp -HostName 127.0.0.1 -Port 4533
 .EXAMPLE
-Park-AetherScopeRotator -Backend Gs232Serial -ParkAzimuth 180 -ParkElevation 0 -PortName COM3 -WhatIf
+Set-AetherScopeRotatorPark -Backend Gs232Serial -ParkAzimuth 180 -ParkElevation 0 -PortName COM3 -WhatIf
 .INPUTS
 None
 .OUTPUTS
@@ -3637,7 +3637,6 @@ https://hamlib.sourceforge.net/html/rotctld.1.html
     end {
     }
 }
-
 
 
 function Start-AetherScopeTrack {
@@ -3927,7 +3926,7 @@ https://hamlib.sourceforge.net/html/rotctld.1.html
         }
         finally {
             if ($ParkOnExit.IsPresent) {
-                Park-AetherScopeRotator -Backend $Backend -ParkAzimuth $ParkAzimuth -ParkElevation $ParkElevation -HostName $HostName -Port $Port -PortName $PortName -BaudRate $BaudRate -TimeoutMilliseconds $TimeoutMilliseconds | Out-Null
+                Set-AetherScopeRotatorPark -Backend $Backend -ParkAzimuth $ParkAzimuth -ParkElevation $ParkElevation -HostName $HostName -Port $Port -PortName $PortName -BaudRate $BaudRate -TimeoutMilliseconds $TimeoutMilliseconds | Out-Null
             }
         }
     }
@@ -5381,4 +5380,3 @@ dashboard than a scrolling shell transcript. Press Ctrl+C to stop a continuous r
     end {
     }
 }
-

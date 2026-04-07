@@ -35,7 +35,7 @@ Export-ModuleMember -Function @(
     'Get-AetherScopeSunPosition',
     'Get-AetherScopeSunVisibilityWindow',
     'Get-AetherScopeVisibilityWindow',
-    'Park-AetherScopeRotator',
+    'Set-AetherScopeRotatorPark',
     'Set-AetherScopeRotatorPosition',
     'Start-AetherScopeDashboard',
     'Start-AetherScopeIssTrack',

@@ -37,3 +37,9 @@ Start-AetherScopeDashboard -Coordinate '30.2752,-89.7812' -IntervalSeconds 2
 .\scripts\Build-AetherScope.ps1 -Verbose
 .\scripts\Build-AetherScope.ps1 -NewVersion '1.0.3' -WhatIf
 ```
+
+## Park a rotator
+
+```powershell
+Set-AetherScopeRotatorPark -Backend HamlibTcp -HostName 127.0.0.1 -Port 4533
+```

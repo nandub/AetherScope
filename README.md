@@ -44,8 +44,15 @@ AetherScope/
     `-- latest-chat-handoff.md
 ```
 
-## Current workspace caveat
-When this handoff package was generated, the expected `Source/` and `Tests/` content was **not present in the workspace snapshot available to Codex CLI**. The documentation in this repository therefore records the intended shape and current assumptions, but future work should verify the actual source tree before making code changes.
+## Current state
+The expected `Source/`, `scripts/`, and `Tests/` content is present in this workspace.
+
+Recent validation in Windows PowerShell 5.1 confirmed:
+- `.\scripts\Build-AetherScope.ps1` produces `dist\AetherScope-1.0.3.zip`
+- `.\scripts\Build-AetherScopePrecisionHelper.ps1` rebuilds the precision helper DLL
+- `Tests\AetherScope.Smoke.Tests.ps1` passes when `Pester 3.4.0` is loaded from non-cloud module paths
+
+The main remaining gap is broader interactive runtime validation of the public command surface.
 
 ## Build
 Use the repository build script:
@@ -56,6 +63,18 @@ Use the repository build script:
 ```
 
 The build script is expected to produce a clean zip in `dist/`.
+
+To rebuild the precision helper:
+
+```powershell
+.\scripts\Build-AetherScopePrecisionHelper.ps1 -Verbose
+```
+
+For new rotator parking automation, prefer the approved-verb command:
+
+```powershell
+Set-AetherScopeRotatorPark -Backend HamlibTcp -HostName 127.0.0.1 -Port 4533
+```
 
 ## Coding requirements
 - Target Windows PowerShell 5.1 only.
@@ -68,8 +87,8 @@ The build script is expected to produce a clean zip in `dist/`.
 - Do not store plaintext credentials.
 
 ## Next recommended actions
-1. Restore or verify the actual `Source/AetherScope.ps1` and related source files.
-2. Run the script under **Windows PowerShell 5.1** and capture parse/runtime issues.
-3. Consolidate historical patch layers into a single clean codebase.
-4. Add or restore smoke tests under `Tests/`.
+1. Perform focused runtime validation of the public tracking, visibility, GPS/NMEA, and rotator commands.
+2. Decide whether to fix the local `PSModulePath` / OneDrive-backed module-loading issue so `Pester` imports cleanly without overrides.
+3. Keep `Set-AetherScopeRotatorPark` as the public parking command and maintain approved-verb naming across new additions.
+4. Consolidate historical patch layers into a single clean codebase.
 5. Ensure the build script packages only production-ready artifacts.
